@@ -1,0 +1,13 @@
+This TestFramework works togther with WRS (Crosswalk Test Report Center),
+and PS (Packages Server) is puls.
+
+===Object===
+This TestFramework is aimed to test those test-suites
+(https://github.com/crosswalk-project/crosswalk-test-suite) for Crosswalk
+automatically.
+
+===
+The files tests_list_embedded.spec & tests_list_shareded.spec under the 'Device_Name' should be the same for all branches, that's,for example, the file tests_list_embedded.spec for canary is the same as tests_list_embedded.spec for beta (or stable).
+...
+
+Thanks

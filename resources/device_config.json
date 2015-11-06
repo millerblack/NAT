@@ -1,0 +1,103 @@
+{
+  "ASUS_MeMO_Pad_8_K011": {
+    "id_list": ["id"],
+    "android_version": "4.4.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "target_binary": {
+        "branch": "canary",
+        "mode": "embedded",
+        "version": "latest"
+    },
+    "is_tested": 1
+  },
+  "Google_Nexus4": {
+    "id_list": ["id1", "id2"],
+    "id1": {
+    "target_binary": {
+        "branch": "beta",
+        "mode": "embedded",
+        "version": "latest"
+    }
+    },
+    "id2": {
+    "target_binary": {
+        "branch": "canary",
+        "mode": "shared",
+        "version": "latest"
+    }
+    },
+    "android_version": "4.4.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "tablet",
+    "is_tested": 1
+  },
+  "Google_Nexus9": {
+    "id_list": ["id1", "id2"],
+    "id1": {
+    "target_binary": {
+        "branch": "canary",
+        "mode": "embedded",
+        "version": "l0.239.52.20"
+    }
+    },
+    "id2": {
+    "target_binary": {
+        "branch": "stable",
+        "mode": "shared",
+        "version": "latest"
+    }
+    },
+    "android_version": "4.4.2",
+    "device_arch": "arm64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "is_tested": 1
+  },
+  "Google_Nexus3": {
+    "id_list": ["id1", "id2"],
+    "id1": {
+    "target_binary": {
+        "branch": "canary",
+        "mode": "embedded",
+        "version": "l0.239.52.20"
+    }
+    },
+    "id2": {
+    "target_binary": {
+        "branch": "beta",
+        "mode": "shared",
+        "version": "latest"
+    }
+    },
+    "android_version": "4.4.2",
+    "device_arch": "arm64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "is_tested": 1
+  },
+  "Kindle": {
+    "id_list": ["id1", "id2"],
+    "id1": {
+    "target_binary": {
+        "branch": "canary",
+        "mode": "embedded",
+        "version": "l0.239.52.20"
+    }
+    },
+    "id2": {
+    "target_binary": {
+        "branch": "beta",
+        "mode": "shared",
+        "version": "latest"
+    }
+    },
+    "android_version": "4.4.2",
+    "device_arch": "arm64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "is_tested": 0
+  }
+}

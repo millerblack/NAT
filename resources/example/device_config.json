@@ -1,0 +1,10 @@
+{
+  "ASUS_MeMO_Pad_8_K011": {
+    "android_version": "4.4.2",
+    "device_arch": "x86",
+    "device_id": "id",
+    "device_os": "android",
+    "device_type": "tablet",
+    "target_branch": "canary"
+  }
+}

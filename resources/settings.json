@@ -1,0 +1,64 @@
+{
+  "log_level_coment": "DEBUG, INFO, WARNING, ERROR, CRITICAL",
+  "log_level": "DEBUG",
+  "env_vars": {
+    "ANDROID_HOME": "/home/feng/work2015/adt-bundle-linux-x86_64-20140702/sdk",
+    "DISPLAY": ":0.0",
+    "PATH": [
+      "/usr/local/bin",
+      "/usr/lib/jvm/jdk1.6.0_45/bin",
+      "/usr/lib/jvm/jdk1.6.0_45/jre/bin",
+      "/home/feng/github/crosswalk-test-suite/tools/crosswalk",
+      "/home/feng/Tools/adt-bundle-linux/sdk",
+      "/home/feng/Tools/adt-bundle-linux/sdk/tools",
+      "/home/feng/Tools/adt-bundle-linux/sdk/platform-tools"]
+  },
+  "test_env_infos": {
+    "Host OS": "Ubuntu 12.04 LTS 64bits",
+    "Android SDK": "Android 22",
+    "Java SDK": "1.7.0_75",
+    "Python": "2.7.3",
+    "testkit-lite": "3.1.14-rc6",
+    "webdriver": "v2.5.ede663c5c5362a073e538cdabacf85612bc9e16a",
+    "selenium": "2.43.0",
+    "atip": "0.0.3",
+    "behave": "1.2.4",
+    "uiautomator": "0.2.5",
+    "Commit ID": "commitid"
+  },
+  "Pack_Server_url": "http://jiaxxx-dev.sh.intel.com/ForNightlyAutoTest/android",
+  "scp_pack_server": "orange@jiaxxx-dev:/data/TestSuites_Storage/live/android/",
+  "auto_pack_packages": 0,
+  "target_branch": "beta",
+  "crosswalk_releases_url_external": "https://download.01.org/crosswalk/releases",
+  "crosswalk_releases_url_internal": "https://download.01.org/crosswalk/releases",
+  "bkcrosswalk_releases_url_internal": "https://linux-ftp.sh.intel.com/pub/mirrors/01org/crosswalk/releases",
+  "current_ww": "WW14",
+  "project_path": "/home/feng/Nightly_2015/xw-att-nightly_64",
+  "xwalkdriver_path": "/home/feng/Tools/crosswalk-web-driver/bin",
+  "tests_project_path": "/home/feng/github/crosswalk-test-suite",
+  "test_scope_list": ["apk"],
+  "pack_mode": "embedded",
+  "cordova_version": "4.0",
+  "lite_64bit": 0,
+  "upload_report": 0,
+  "webdriver_mode": 0,
+  "rerun_line": 30,
+  "report_settings": {
+    "wrs_api": "http://wrs.sh.intel.com/api",
+    "authtokens": "f08b2c258bf5ec28f3f9ee06fced741eb9b6f760"
+  },
+  "mail_settings": {
+    "mail_object": "For WebAPI Pure & Cordova",
+    "mail_list": {
+      "001": "fengx.dai@intel.com"
+    },
+    "mail_cclist": {},
+    "mail_bcclist": {
+      "001": "feng.dai@archermind.com"
+    },
+    "mail_host": "smtp.intel.com:25",
+    "mail_user": "fengx.dai",
+    "mail_postfix": "intel.com"
+  }
+}

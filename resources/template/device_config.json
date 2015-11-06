@@ -1,0 +1,29 @@
+{
+  "DEVICE_NAME1": {
+    "id_list": ["id-1", ..., "id-n"],#if all devices are same, no need to add "id-x" dic info, can draw the infos out, or if some devices are deferent, "id-x" dic infos needs config
+    "id-1": { #E6OKCY410891(adb devices for android), hostname@ip for tizen/windows, etc
+        ##android_version, device_arch, device_os, target_binary,  all devices are deferent, define each
+        "android_version": "x.x", #5.0, 4.4.2, etc for andoid device only
+        "device_arch": "arch_type", #x86/arm/x86_64/arm64
+        "device_os": "os_type", #android/tizen/ios/deepin/windows10
+        "target_binary": {
+            "branch": "branch",# canary/beta/stable
+            "mode": "mode", #embedded, shared
+            "version": "latest" #latest: get the latest from PS(Packer Server), "xxx.xxx.xxx.xx": specify the wanted version
+        }
+    },
+    ###android_version, device_arch, device_os, target_binary if all devices are same###
+    #"android_version": "x.x", #5.0, 4.4.2, etc for andoid device only
+    #"device_arch": "arch_type", #x86/arm/x86_64/arm64
+    #"device_os": "os_type", #android/tizen/ios/deepin/windows
+    #"target_binary": {
+    #    "branch": "branch",# canary/beta/stable
+    #    "mode": "mode", #embedded, shared
+    #    "version": "latest" #latest: get the latest from PS(Packer Server), "xxx.xxx.xxx.xx": specify the wanted version
+    #}
+    "device_type": "type", #phone/tablet
+    "is_tested": 0 #0: not test, 1: test
+  },
+
+  ...
+}
