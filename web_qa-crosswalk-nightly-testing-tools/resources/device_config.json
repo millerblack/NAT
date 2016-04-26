@@ -1,0 +1,408 @@
+{
+  "ASUS_MeMO_Pad_8_K011": {
+    "android_version": "4.4.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "E6OKCY478168": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      },
+      "E6OKCY410660": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      },
+      "E6OKCY410928": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 1
+  },
+  "ASUS_T00E_Padfone_Mini": {
+    "android_version": "4.3",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "E4ATCY004473": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "ASUS_T00G_Zenfone_6": {
+    "android_version": "4.3",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "E5AZCY389460": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "CTE_FT510": {
+    "android_version": "5.1",
+    "device_arch": "x86_64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "wrs_branch": "stable",
+    "assignments": {
+      "AGND3R7DA4B04A": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Coolpad_8297W": {
+    "android_version": "4.2.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "Coolpad8297W-03266bb2": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Dell_Venue_8": {
+    "android_version": "4.3",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "DellVenue8000215814": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "ECS2-8A": {
+    "android_version": "5.1.1",
+    "device_arch": "x86_64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "D7F5495F": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      },
+      "96E68270": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Google_Nexus_3": {
+    "android_version": "4.0.4",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "016B756F15018005": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Google_Nexus_4": {
+    "android_version": "4.2.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "007bca35cdcc75d4": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Google_Nexus_5": {
+    "android_version": "4.4.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "066f440d2115ab72": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["cordova4.x"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Google_Nexus_7": {
+    "android_version": "4.3",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "0794b0fb": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Google_Nexus_9": {
+    "android_version": "5.0",
+    "device_arch": "arm64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "HT4B4JT02705": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["cordova4.x"]
+        },
+        "rerun_flag": 1
+      }
+    },
+    "is_tested": 0
+  },
+  "HuaWei_Honor_3X": {
+    "android_version": "4.2.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "OZP7NZQSKBTKOFDA": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Kindle_Fire_HD": {
+    "android_version": "Fire OS 4.5.5",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "00D20708403100B7": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Ramos_i10": {
+    "android_version": "4.2.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "CLV1FBE5152": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Samsung_Galaxy_Tab_3": {
+    "android_version": "4.2.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "4300ca60475c7000": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Toshiba_Excite_Go_AT7-C8": {
+    "android_version": "4.4.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "Baytrail1D8C1DC4": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "XiaoMi_Pad_2": {
+    "android_version": "5.1 LMY47I",
+    "device_arch": "x86_64",
+    "device_os": "android",
+    "device_type": "tablet",
+    "assignments": {
+      "A3P41788C4B2": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      },
+      "A3P4107F52CD": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      },
+      "A3P4036DF47F": {
+        "target_binary": {
+          "branch": "beta",
+          "mode": "shared",
+          "version": "18.48.477.13",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 1
+  },
+  "ZTE_Grand_Memo_U5": {
+    "android_version": "4.1.2",
+    "device_arch": "arm",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "015d15b5203c0003_PTPADB": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "ZTE_Geek_V975": {
+    "android_version": "4.2.2",
+    "device_arch": "x86",
+    "device_os": "android",
+    "device_type": "phone",
+    "assignments": {
+      "MedfieldBF52A98F": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  }
+}
