@@ -20,30 +20,22 @@ class Precondition:
 
     def set_precondition(self):
         unzipped_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, self.device_name, self.device_id, self.binary_version, self.segment)
-        mobilespec_file = "%s/mobilespec.apk" % unzipped_dir
         apk_resource_dir = "/tmp/cordova-sampleapp"
         package_release_url = " %s/%s/%s/%s/%s/%s-%s/%s" % (package_release_server_url, crosswalk_type, test_platform, self.binary_branch, self.binary_version, self.segment, self.mode, self.device_arch)
         save_dir =  "%s/%s/%s/%s/%s/%s-%s/%s" % (repo_dir, crosswalk_type, test_platform, self.binary_branch, self.binary_version, self.segment, self.mode, self.device_arch)
+        downloaded_mobilespec_file = "%s/mobilespec.apk" % save_dir
 
         if not os.path.exists(apk_resource_dir):
             os.mkdir(apk_resource_dir)
 
-        if not os.path.exists(mobilespec_file):
-            sampleapp_file_name = "%s_sampleapp_%s.zip" % (self.segment, self.device_arch)
-            if not os.path.exists("%s/%s" % (save_dir, sampleapp_file_name )):
-                os.system("wget %s/%s -P %s" % (package_release_url, sampleapp_file_name, save_dir))
-            os.system("unzip -o %s/%s -d %s" % (save_dir, sampleapp_file_name, unzipped_dir))
-            if not os.path.exists(mobilespec_file):
-                if not os.path.exists("%s/mobilespec.apk" % save_dir):
-                    os.system("wget %s/mobilespec.apk -P %s" % (package_release_url, save_dir))
-                    if os.path.exists("%s/mobilespec.apk" % save_dir):
-                        shutil.copy("%s/mobilespec.apk" % save_dir, apk_resource_dir)
-                    else:
-                        print "No such '%s/mobilespec.apk'" % package_release_url
-                else:
-                    shutil.copy("%s/mobilespec.apk" % save_dir, apk_resource_dir)
+        if not os.path.exists(downloaded_mobilespec_file):
+            s, o = commands.getstatusoutput("wget %s/mobilespec.apk -P %s" % (package_release_url, save_dir))
+            if s == 0:
+                 shutil.copy(downloaded_mobilespec_file, apk_resource_dir)
             else:
-                shutil.copy(mobilespec_file, apk_resource_dir)
+                print "Error [%s] happened when testing '%s' 'cordova-feature-android-tests' on '%s'." % (o, self.mode, self.device_name)
+        else:
+            shutil.copy(downloaded_mobilespec_file, apk_resource_dir)
 
         crosswalk_tools_dir = "%s/%s/%s/%s/%s/crosswalk-tools" % (repo_dir, crosswalk_type, test_platform, self.binary_branch, self.binary_version)
         mvn_cmd = "mvn install:install-file -DgroupId=org.xwalk -DartifactId=%s -Dversion=%s -Dpackaging=aar -Dfile=%s/%s -DgeneratePom=true"
@@ -53,14 +45,14 @@ class Precondition:
         if self.mode == "shared":
             artifactid = "xwalk_shared_library"
             aar_file_name = "crosswalk-shared-%s.aar" % self.binary_version
-            mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+            mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
         elif self.mode == "embedded":
             if self.device_arch == "arm64":
                 aar_file_name = "crosswalk-%s-64bit.aar" % self.binary_version
-                mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+                mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
                 mvn_cmd += " -Dclassifier=64bit"
             else:
-                mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+                mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
 
         os.system(mvn_cmd)
         os.environ[self.env_var] = "--testprefix=%s" % unzipped_dir

@@ -1,0 +1,14 @@
+{
+    "xw_type": "crosswalk",
+    "platform": "android",
+    "android_version": "4.4.2",
+    "segment": "crosswalk",
+    "binary_branch": "canary",
+    "binary_version": "88.88.888.0",
+    "device_name": "Google_Nexus_5",
+    "device_arch": "arm",
+    "device_type": "phone",
+    "mode": "embedded",
+    "commit_id": "77777777777777",
+    "upload_type": "Nightly"
+}

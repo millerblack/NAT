@@ -6,7 +6,6 @@ sys.path.append("%s/../../util" % os.path.abspath(os.path.dirname(__file__)))
 from ntcommon import *
 import random
 import commands
-import xml.etree.ElementTree as etree
 
 
 wrs_api = report_settings_dic["wrs_api"]
@@ -15,7 +14,7 @@ authtokens = report_settings_dic["authtokens"]
 
 def print_usage():
     print """usage:
-  python ntreport.py <result_dir>"""
+  python ntreport_csv.py <result_dir>"""
 
 
 def get_random_str():
@@ -31,25 +30,18 @@ def get_random_str():
     return random_str
 
 
-def get_test_suite_name(xml_file):
-    nt_logger.debug("Call Function: 'get_test_suite_name' with xml_file(%s)" % xml_file)
-    test_suite_name = None
-    root = etree.parse(xml_file).getroot()
-    suite_elem = root.find("suite")
-
-    if suite_elem is not None::
-        test_suite_name = suite_elem.get("name")
+def get_test_suite_name(file_name):
+    nt_logger.debug("Call Function: 'get_test_suite_name' with file_name(%s)" % file_name)
+    base_name = os.path.basename(file_name)
+    test_suite_name = os.path.splitext(base_name)[0].split('result_')[1]
 
     return test_suite_name
 
 
 def get_dst_dir_upload(test_suite_name, key):
     nt_logger.debug("Call Function: 'get_dst_dir_upload' with test_suite_name(%s), key(%s)" % (test_suite_name, key))
-    dst_dir_upload = None
-
-    if base_test_dic.has_key(test_suite_name):
-        category = base_test_dic[test_suite_name]["category"]
-        dst_dir_upload = "%s/upload_xml_csv/%s/%s" % (middle_tmp_dir, key, category)
+    category = base_test_dic[test_suite_name]["category"]
+    dst_dir_upload = "%s/upload_xml_csv/%s/%s" % (middle_tmp_dir, key, category)
 
     return dst_dir_upload
 
@@ -60,13 +52,9 @@ def sort_result_xml(result_dir, random_key):
 
     for result_xml in result_xml_list:
         test_suite_name = get_test_suite_name(result_xml)
-        if test_suite_name:
-            dst_dir = get_dst_dir_upload(test_suite_name, random_key)
-            if dst_dir:
-                create_folder(dst_dir)
-                shutil.copy(result_xml, dst_dir)
-            else:
-                nt_logger.error("Suit Name [%s] does not match actural test suite name, please check it" % test_suite_name)
+        dst_dir = get_dst_dir_upload(test_suite_name, random_key)
+        create_folder(dst_dir)
+        shutil.copy(result_xml, dst_dir)
 
 
 def is_need_upload(result_file):
@@ -174,9 +162,6 @@ def upload(result_dir):
     if not check_exists(result_dir):
         nt_logger.error("No such result dir: [%s]" % result_dir)
         return False
-    elif not glob.glob("%s/*.xml" % result_dir):
-        nt_logger.error("No such result file in: [%s]" % result_dir)
-        return False
 
     xw_type = None
     platform = None
@@ -191,7 +176,7 @@ def upload(result_dir):
     test_type = upload_type
     flag = "all"
     timestamp = time.strftime('%Y%m%d%H%M%S', time.localtime())
-    upload_config_file = "%s/upload_config.json" % result_dir
+    upload_config_file = "%s/upload_xml_csv/upload_config.json" % result_dir
 
     if os.path.isfile(upload_config_file):
         upload_config_dic = get_json_dic(upload_config_file)
@@ -252,14 +237,13 @@ def upload(result_dir):
         details_info_list.append(env_item)
 
     details_info = ';'.join(details_info_list)
-    random_key = get_random_str()
-    sort_result_xml(result_dir, random_key)
-    category_list = os.listdir("%s/upload_xml_csv/%s" % (middle_tmp_dir, random_key))
+    category_list = test_suite_categories_list
     category_list.sort()
 
     for test_category in category_list:
-        category_dir = "%s/upload_xml_csv/%s/%s" % (middle_tmp_dir, random_key, test_category)
-        result_file_list = glob.glob("%s/*.xml" % category_dir)
+        #category_dir = "%s/upload_xml_csv/%s/%s" % (middle_tmp_dir, random_key, test_category)
+        category_dir = "%s/upload_xml_csv/%s" % (result_dir, test_category)
+        result_file_list = glob.glob("%s/*.csv" % category_dir)
         report_result_list = []
         result_file_list.sort()
         for result_file in result_file_list:
@@ -267,7 +251,7 @@ def upload(result_dir):
                 #report_result_list.append('files@%s' % result_file_path)
                 report_result_list.append('-F files=@%s' % result_file.replace(' ', '\ '))
         if report_result_list:
-            relevant_reports_02_index = get_relevant_reports_02_index_database(test_category)
+            relevant_reports_02_index = get_relevant_reports_02_index_database(test_category.replace('_', ' '))
             #http -f POST http://wrs.sh.intel.com:8080/api/reports/ Authorization:' Token 8b2b30a3ee14396a8c742243335c87231eec0d6a' files@/home/otcqa/Documents/test_result/result_tct-webstorage-w3c-tests.xml build=2 device=3 relevant_reports_01=1 relevant_reports_02=2  --timeout 3600 --ignore-stdin
             upload_cmd = """curl %s -F build=%s -F device=%s -F relevant_reports_01=%s -F relevant_reports_02=%s -F details='%s' -F summary=Summary %s/reports/ -H 'Authorization: Token %s'""" % (' '.join(report_result_list), builds_index, device_index, relevant_reports_01_index, relevant_reports_02_index, details_info, wrs_api, authtokens)
             #logger.debug("reports API: %s" % upload_cmd)
@@ -291,7 +275,7 @@ def upload(result_dir):
             #handle upload result and save report id
             upload_log_save_dir = "%s/%s" % (save_link_dir, segment)
             create_folder(upload_log_save_dir)
-            upload_log_file = "%s/%s.txt" % (upload_log_save_dir, test_category)
+            upload_log_file = "%s/%s.txt" % (upload_log_save_dir, test_category.replace('_', ' '))
             save_dic_json_file(result_dic, upload_log_file)
 
     #logger.info("Finish upload report.")

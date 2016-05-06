@@ -238,10 +238,10 @@ def preinstall_runtimelib_android(device_name, device_id, branch, version, arch)
     runtimelib_zip = "%s/%s/%s/%s/%s/crosswalk-tools/%s/crosswalk-apks-%s-%s.zip" % (repo_dir, crosswalk_type, test_platform, branch, version, arch, version, arch)
 
     if os.path.isfile(runtimelib_zip):
-        unzip_dist_dir = "%s/unzip_package/%s_%s/%s" % (middle_tmp_dir, device_name, device_id, version)
-        create_folder(unzip_dist_dir)
-        os.system("unzip %s -d %s" % (runtimelib_zip, unzip_dist_dir))
-        runtimelib_apk = "%s/crosswalk-apks-%s-%s/XWalkRuntimeLib.apk" % (unzip_dist_dir, version, arch)
+        unzip_dst_dir = "%s/unzip_package/%s_%s/%s" % (middle_tmp_dir, device_name, device_id, version)
+        create_folder(unzip_dst_dir)
+        os.system("unzip %s -d %s" % (runtimelib_zip, unzip_dst_dir))
+        runtimelib_apk = "%s/crosswalk-apks-%s-%s/XWalkRuntimeLib.apk" % (unzip_dst_dir, version, arch)
         if os.path.isfile(runtimelib_apk):
             uninstall_runtimelib_android(device_name, device_id)
             output = commands.getoutput("adb -s %s install %s" % (device_id, runtimelib_apk))

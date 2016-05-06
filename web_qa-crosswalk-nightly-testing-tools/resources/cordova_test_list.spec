@@ -1,3 +1,4 @@
+cordova-appsecurityapi-android-tests
 cordova-feature-android-tests
 cordova-sampleapp-android-tests
 cordova-webapp-android-tests
@@ -56,11 +57,13 @@ tct-websocket-w3c-tests
 tct-webstorage-w3c-tests
 tct-workers-w3c-tests
 tct-xmlhttprequest-w3c-tests
+webapi-appsecurity-external-tests
 webapi-appuri-w3c-tests
 webapi-contactsmanager-w3c-tests
 webapi-devicecapabilities-w3c-tests
 webapi-gamepad-w3c-tests
 webapi-hrtime-w3c-tests
+webapi-imports-w3c-tests
 webapi-input-html5-tests
 webapi-messaging-w3c-tests
 webapi-nativefilesystem-xwalk-tests

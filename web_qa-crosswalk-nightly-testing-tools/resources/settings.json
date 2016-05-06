@@ -47,6 +47,20 @@
     "XiaoMi_Pad_2": "x86-xiaomi",
     "CTE_FT510": "x86-cte510"
   },
+  "test_suite_categories": [
+    "WRT",
+    "Web_APIs",
+    "Sample_Apps",
+    "Use_Cases",
+    "Embedding_APIs",
+    "Stability",
+    "Cordova_APIs",
+    "Cordova_Features",
+    "Cordova_Use_Cases",
+    "Compatibility",
+    "App_Tools",
+    "RealSense_Samples"
+  ],
   "rerun_line": 30,
   "upload_type": "Nightly",
   "is_upload_report": 1,

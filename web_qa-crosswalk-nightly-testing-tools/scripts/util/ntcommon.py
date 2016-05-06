@@ -92,6 +92,7 @@ is_upload_report = settings_dic["is_upload_report"]
 upload_type = settings_dic["upload_type"]
 report_settings_dic = settings_dic["report_settings"]
 mail_settings_dic = settings_dic["mail_settings"]
+test_suite_categories_list = settings_dic["test_suite_categories"]
 
 dir_pattern = '\<img\ src=\"\/icons\/folder\.gif\"\ alt=\"\[DIR\]\"\>.*'
 
@@ -140,21 +141,21 @@ def is_binary_tested(device_name, branch, segment_delegate, latest_version, mode
     nt_logger.debug("Call Function: 'is_binary_tested' with device_name(%s), branch(%s), segment_delegate(%s), latest_version(%s), mode(%s), vcrosswalk_type(%s), vtest_platform(%s)" % (device_name, branch, segment_delegate, latest_version, mode, vcrosswalk_type, vtest_platform))
     #return value: True: already tested, False: not tested
     #final_test_result_dir likes test_result/crosswalk/android/crosswalk/master/ASUS_MeMO_Pad_8_K011/shared/18.46.470.0/20160122113
-    dist_result_dir = "%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, vcrosswalk_type, vtest_platform, segment_delegate, branch, device_name, mode, latest_version)
-    nt_logger.debug("By checking whether the path '%s' exists, to justify whether the binary of '%s-%s-%s-%s' has been tested." % (dist_result_dir, vcrosswalk_type, branch, mode, latest_version))
+    dst_result_dir = "%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, vcrosswalk_type, vtest_platform, segment_delegate, branch, device_name, mode, latest_version)
+    nt_logger.debug("By checking whether the path '%s' exists, to justify whether the binary of '%s-%s-%s-%s' has been tested." % (dst_result_dir, vcrosswalk_type, branch, mode, latest_version))
 
-    return check_exists(dist_result_dir)
+    return check_exists(dst_result_dir)
 
 
-def fill_download_orders_dic(arch, src_dic, dist_dic):
-    nt_logger.debug("Call Function: 'fill_download_orders_dic' with arch(%s), src_dic(%s), dist_dic(%s)" % (arch, src_dic, dist_dic))
+def fill_download_orders_dic(arch, src_dic, dst_dic):
+    nt_logger.debug("Call Function: 'fill_download_orders_dic' with arch(%s), src_dic(%s), dst_dic(%s)" % (arch, src_dic, dst_dic))
     branch = src_dic["branch"]
     mode = src_dic["mode"]
     version = src_dic["version"]
     segment_list = src_dic["segment_list"]
 
-    if dist_dic.has_key(branch):
-        branch_dic = dist_dic[branch]
+    if dst_dic.has_key(branch):
+        branch_dic = dst_dic[branch]
         if branch_dic.has_key(version):
             version_dic = branch_dic[version]
             if version_dic.has_key(mode):
@@ -183,7 +184,7 @@ def fill_download_orders_dic(arch, src_dic, dist_dic):
         tmp_version_dic[mode] = tmp_mode_dic
         tmp_branch_dic = {}
         tmp_branch_dic[version] = tmp_version_dic
-        dist_dic[branch] = tmp_branch_dic
+        dst_dic[branch] = tmp_branch_dic
 
 
 def save_dic_json_file(saved_dic, json_file):
@@ -300,11 +301,11 @@ def generate_test_xml(dir_path, test_name, output_dir):
     file_list = glob.glob("%s/tests_v*.xml" % dir_path)
     file_list.sort()
     length = len(file_list)
-    #dist_file = '%s/%s.tests.xml' % (output_dir, test_name)
-    dist_file = '%s/tests.xml' % output_dir
+    #dst_file = '%s/%s.tests.xml' % (output_dir, test_name)
+    dst_file = '%s/tests.xml' % output_dir
 
-    if os.path.exists(dist_file):
-        os.remove(dist_file)
+    if os.path.exists(dst_file):
+        os.remove(dst_file)
 
     root = etree.parse(file_list[0]).getroot()
     suite_elem = root.find("suite")
@@ -317,7 +318,7 @@ def generate_test_xml(dir_path, test_name, output_dir):
         for tc in tmp_tc_list:
             set_elem.append(tc)
 
-    with open(dist_file, 'w') as output:
+    with open(dst_file, 'w') as output:
         wtree = etree.ElementTree(element=root)
         wtree.write(output)
 

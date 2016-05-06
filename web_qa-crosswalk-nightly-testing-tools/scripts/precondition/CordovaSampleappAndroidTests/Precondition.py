@@ -20,8 +20,6 @@ class Precondition:
 
     def set_precondition(self):
         unzipped_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, self.device_name, self.device_id, self.binary_version, self.segment)
-        privatenotes_file = "%s/privateNotes.apk" % unzipped_dir
-        spacedodge_file = "%s/spacedodge.apk" % unzipped_dir
         apk_resource_dir = "/tmp/cordova-sampleapp"
 
         if not os.path.exists(apk_resource_dir):
@@ -29,66 +27,49 @@ class Precondition:
 
         package_release_url = "%s/%s/%s/%s/%s/%s-%s/%s" % (package_release_server_url, crosswalk_type, test_platform, self.binary_branch, self.binary_version, self.segment, self.mode, self.device_arch)
         save_dir = "%s/%s/%s/%s/%s/%s-%s/%s" % (repo_dir, crosswalk_type, test_platform, self.binary_branch, self.binary_version, self.segment, self.mode, self.device_arch)
-        if not os.path.exists(privatenotes_file):
-            sampleapp_file_name = "%s_sampleapp_%s.zip" % (self.segment, self.device_arch)
-            if not os.path.exists("%s/%s" % (save_dir, sampleapp_file_name )):
-                os.system("wget %s/%s -P %s" % (package_release_url, sampleapp_file_name, save_dir))
-            os.system("unzip -o %s/%s -d %s" % (save_dir, sampleapp_file_name, unzipped_dir))
-            if not os.path.exists(privatenotes_file):
-                if not os.path.exists("%s/privateNotes.apk" % save_dir):
-                    os.system("wget %s/privateNotes.apk -P %s" % (package_release_url, save_dir))
-                    if os.path.exists("%s/privateNotes.apk" % save_dir):
-                        shutil.copy("%s/privateNotes.apk" % save_dir, apk_resource_dir)
-                    else:
-                        print "No such '%s/privateNotes.apk'" % package_release_url
-                else:
-                    shutil.copy("%s/privateNotes.apk" % save_dir, apk_resource_dir)
+        downloaded_privatenotes_file = "%s/privateNotes.apk" % save_dir
+
+        if not os.path.exists(downloaded_privatenotes_file):
+            s, o = commands.getstatusoutput("wget %s/privateNotes.apk -P %s" % (package_release_url, save_dir))
+            if s == 0:
+                 shutil.copy(downloaded_privatenotes_file, apk_resource_dir)
             else:
-                shutil.copy(privatenotes_file, apk_resource_dir)
-            if not os.path.exists(spacedodge_file):
-                if not os.path.exists("%s/spacedodge.apk" % save_dir):
-                    os.system("wget %s/spacedodge.apk -P %s" % (package_release_url, save_dir))
-                    if os.path.exists("%s/spacedodge.apk" % save_dir):
-                        shutil.copy("%s/spacedodge.apk" % save_dir, apk_resource_dir)
-                    else:
-                        print "No such '%s/spacedodge.apk'" % package_release_url
-                else:
-                    shutil.copy("%s/spacedodge.apk" % save_dir, apk_resource_dir)
+                print "Error [%s] happened when testing '%s' 'cordova-sampleapp-android-tests' on '%s'." % (o, self.mode, self.device_name)
+        else:
+            shutil.copy(downloaded_privatenotes_file, apk_resource_dir)
+
+        downloaded_spacedodge_file = "%s/spacedodge.apk" % save_dir
+
+        if not os.path.exists(downloaded_spacedodge_file):
+            s, o = commands.getstatusoutput("wget %s/spacedodge.apk -P %s" % (package_release_url, save_dir))
+            if s == 0:
+                 shutil.copy(downloaded_spacedodge_file, apk_resource_dir)
             else:
-                shutil.copy(spacedodge_file, apk_resource_dir)
+                print "Error [%s] happened when testing '%s' 'cordova-sampleapp-android-tests' on '%s'." % (o, self.mode, self.device_name)
         else:
-            shutil.copy(privatenotes_file, apk_resource_dir)
-            if not os.path.exists(spacedodge_file):
-                if not os.path.exists("%s/spacedodge.apk" % save_dir):
-                    os.system("wget %s/spacedodge.apk -P %s" % (package_release_url, save_dir))
-                    if os.path.exists("%s/spacedodge.apk" % save_dir):
-                        shutil.copy("%s/spacedodge.apk" % save_dir, apk_resource_dir)
-                    else:
-                        print "No such '%s/spacedodge.apk'" % package_release_url
-                else:
-                    shutil.copy("%s/spacedodge.apk" % save_dir, apk_resource_dir)
+            shutil.copy(downloaded_spacedodge_file, apk_resource_dir)
+
+        downloaded_circ_file = "%s/CIRC.apk" % save_dir
+
+        if not os.path.exists(downloaded_circ_file):
+            s, o = commands.getstatusoutput("wget %s/CIRC.apk -P %s" % (package_release_url, save_dir))
+            if s == 0:
+                 shutil.copy(downloaded_circ_file, apk_resource_dir)
             else:
-                shutil.copy(spacedodge_file, apk_resource_dir)
-
-        circ_file = "%s/CIRC.apk" % save_dir
-
-        if not os.path.exists(circ_file):
-            os.system("wget %s/CIRC.apk -P %s" % (package_release_url, save_dir))
-
-        if not os.path.exists(circ_file):
-            print "No such '%s/CIRC.apk'" % package_release_url
+                print "Error [%s] happened when testing '%s' 'cordova-sampleapp-android-tests' on '%s'." % (o, self.mode, self.device_name)
         else:
-            shutil.copy(circ_file, apk_resource_dir)
+            shutil.copy(downloaded_circ_file, apk_resource_dir)
 
-        eh_file = "%s/Eh.apk" % save_dir
+        downloaded_eh_file = "%s/Eh.apk" % save_dir
 
-        if not os.path.exists(eh_file):
-            os.system("wget %s/Eh.apk -P %s" % (package_release_url, save_dir))
-
-        if not os.path.exists(eh_file):
-            print "No such '%s/Eh.apk'" % package_release_url
+        if not os.path.exists(downloaded_eh_file):
+            s, o = commands.getstatusoutput("wget %s/Eh.apk -P %s" % (package_release_url, save_dir))
+            if s == 0:
+                 shutil.copy(downloaded_eh_file, apk_resource_dir)
+            else:
+                print "Error [%s] happened when testing '%s' 'cordova-sampleapp-android-tests' on '%s'." % (o, self.mode, self.device_name)
         else:
-            shutil.copy(eh_file, apk_resource_dir)
+            shutil.copy(downloaded_eh_file, apk_resource_dir)
 
         #http://otcqa.sh.intel.com/qa-auto/live/Xwalk-testsuites/NewSampleApp/android/beta/18.48.477.13/32bit/Sampleapp_sourcecode.zip
         sourcecode_file = "Sampleapp_sourcecode.zip"
@@ -113,14 +94,14 @@ class Precondition:
         if self.mode == "shared":
             artifactid = "xwalk_shared_library"
             aar_file_name = "crosswalk-shared-%s.aar" % self.binary_version
-            mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+            mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
         elif self.mode == "embedded":
             if self.device_arch == "arm64":
                 aar_file_name = "crosswalk-%s-64bit.aar" % self.binary_version
-                mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+                mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
                 mvn_cmd += " -Dclassifier=64bit"
             else:
-                mvn_cmd = mvn_cmd % (artifactid, self.binary_branch, crosswalk_tools_dir, aar_file_name)
+                mvn_cmd = mvn_cmd % (artifactid, self.binary_version, crosswalk_tools_dir, aar_file_name)
 
         os.system(mvn_cmd)
         os.environ[self.env_var] = "--testprefix=%s" % unzipped_dir
