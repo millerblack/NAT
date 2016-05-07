@@ -618,6 +618,13 @@
     "rerun_times": 0, 
     "timeout": 50
   },
+  "webapi-webgl-khronos-tests": {
+    "all_in_one": "webapi-service-tests", 
+    "category": "Web APIs", 
+    "precondition": 0, 
+    "rerun_times": 0, 
+    "timeout": 60
+  },
   "webapi-webrtc-w3c-tests": {
     "all_in_one": "webapi-noneservice-tests", 
     "category": "Web APIs", 

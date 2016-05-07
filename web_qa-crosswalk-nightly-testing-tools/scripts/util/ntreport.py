@@ -37,7 +37,7 @@ def get_test_suite_name(xml_file):
     root = etree.parse(xml_file).getroot()
     suite_elem = root.find("suite")
 
-    if suite_elem is not None::
+    if suite_elem is not None:
         test_suite_name = suite_elem.get("name")
 
     return test_suite_name
