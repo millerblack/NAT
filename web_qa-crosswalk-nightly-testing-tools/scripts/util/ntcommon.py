@@ -10,6 +10,7 @@ import urlparse
 import time
 import logging
 import ConfigParser
+import socket
 
 
 util_module_path = os.path.dirname(os.path.abspath(__file__))
@@ -92,7 +93,10 @@ is_upload_report = settings_dic["is_upload_report"]
 upload_type = settings_dic["upload_type"]
 report_settings_dic = settings_dic["report_settings"]
 mail_settings_dic = settings_dic["mail_settings"]
+domain_name = settings_dic["domain_name"]
 test_suite_categories_list = settings_dic["test_suite_categories"]
+tinyweb_docroot_path = settings_dic["tinyweb_docroot_path"]
+tinyweb_path = settings_dic["tinyweb_path"]
 
 dir_pattern = '\<img\ src=\"\/icons\/folder\.gif\"\ alt=\"\[DIR\]\"\>.*'
 
@@ -385,7 +389,10 @@ def get_commit_id(url):
 
 def get_map_url_type(branch, version, segment, mode, arch, vcrosswalk_type, vtest_platform):
     nt_logger.debug("Call Function: 'get_map_url_type' with branch(%s), version(%s), segment(%s), mode(%s), arch(%s), vcrosswalk_type(%s), vtest_platform(%s)" % (branch, version, segment, mode, arch, vcrosswalk_type, vtest_platform))
-    map_url_type = "%s/%s/%s/%s/%s-%s/%s" % (vcrosswalk_type, vtest_platform, branch.replace("canary", "master"), version, segment.replace("crosswalk", "testsuites"), mode, arch)
+    map_url_type = "%s/%s/%s/%s" % (vcrosswalk_type, vtest_platform, branch.replace("canary", "master"), version)
+
+    if vtest_platform == "android":
+        map_url_type += "/%s-%s/%s" % (segment.replace("crosswalk", "testsuites"), mode, arch)
 
     return map_url_type
 
@@ -482,3 +489,20 @@ def update_config_file(file_name, section, option, value):
         conf.write(open(file_name, "w"))
     else:
         nt_logger.error("No such config file:'%s', fail to update" % file_name)
+
+
+def get_host_name():
+    return socket.gethostname()
+
+
+def get_host_ip():
+    host_name = get_host_name()
+    host_ip = None
+
+    try:
+       host_ip = socket.gethostbyname_ex("%s%s" % (host_name,domain_name))[2][0]
+    except Exception, e:
+       print "Error [%s] happened when get host ip address, now switch to use the host_ip info in settings.json" % e
+       host_ip = settings_dic["host_ip"]
+
+    return host_ip

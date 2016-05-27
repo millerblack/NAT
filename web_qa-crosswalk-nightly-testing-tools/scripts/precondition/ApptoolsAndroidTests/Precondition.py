@@ -32,18 +32,6 @@ class Precondition:
             binary_name = "crosswalk-%s-64bit.zip" %  self.binary_version
             bit = "64"
 
-        sa_sourcecode = "/tmp/Sampleapp_sourcecode.zip"
-
-        if os.path.isfile(sa_sourcecode):
-            os.remove(sa_sourcecode)
-
-        unzipped_sa = "/tmp/crosswalk-samples"
-
-        if os.path.exists(unzipped_sa):
-            shutil.rmtree(unzipped_sa)
-
-        os.system("wget http://otcqa.sh.intel.com/qa-auto/live/Xwalk-testsuites/Sampleapp_SourceCode_And_Binary/Sampleapp_sourcecode.zip -P /tmp")
-        os.system("unzip %s -d /tmp" % sa_sourcecode)
         shutil.copy("%s/%s/%s/%s/%s/crosswalk-tools/%s" % (repo_dir, crosswalk_type, test_platform, self.binary_branch, self.binary_version, binary_name), cache_path)
         local_crosswalk_app_tools = "%s/crosswalk-app-tools" % open_source_projects_dir
         save_repo_path = "%s/crosswalk-app-tools" % cache_path

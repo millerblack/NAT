@@ -18,7 +18,7 @@ START_TEST_TIME = None
 update_device_config_dic = {}
 #lock.acquire()
 #lock.release()
-
+host_id = get_host_ip()
 
 def is_xwalkdriver_active():
     nt_logger.debug("Call Function: 'is_xwalkdriver_active'")
@@ -74,6 +74,19 @@ def install_test_package(test_suite_name, test_package, device_name, device_id, 
         inst_py_file = "%s/opt/%s/inst.py" % (unzip_to_dir, test_suite_name)
         if os.path.isfile(inst_py_file):
             inst_status, inst_output = commands.getstatusoutput('python %s -s %s' % (inst_py_file, device_id))
+            if inst_status != 0:
+                nt_logger.error("Error: Fail to install '%s' on '%s(%s)' with [%s]" % (test_package, test_suite_name, device_id, inst_output))
+                if inst_output.find("INSTALL_FAILED_INSUFFICIENT_STORAGE") != -1:
+                    nt_logger.debug("Reboot '%s(%s)', to fix 'INSTALL_FAILED_INSUFFICIENT_STORAGE'" % (device_name, device_id))
+                    os.system("adb -s %s reboot" % device_id)
+                    time.sleep(30)
+                    inst_status1, inst_output1 = commands.getstatusoutput('python %s -s %s' % (inst_py_file, device_id))
+                    if inst_status1 != 0:
+                        nt_logger.error("Error: Fail to re-install '%s' on '%s(%s)' with [%s]" % (test_package, device_name, device_id, inst_output1))
+                        return False
+                    else:
+                        return True
+                return False
             return True
         else:
             nt_logger.error("No such 'int.py' of '%s', fail to do install" % test_package)
@@ -106,6 +119,39 @@ def ready_docroot_for_tinyweb(device_name, device_id, branch, version, segment, 
         return True
     else:
         return False
+
+
+def stop_tinyweb_windows():
+    output =  commands.getoutput("pgrep -x tinyweb")
+    if output:
+        process_id = int(output)
+        os.system("kill -9 %d" % process_id)
+    else:
+        pass
+
+
+def launch_tinyweb_windows():
+    stop_tinyweb_windows()
+
+    if os.path.exists(tinyweb_docroot_path):
+        os.system("rm -rf %s" % tinyweb_docroot_path)
+
+    os.makedirs("%s/packages" % tinyweb_docroot_path)
+    #according to packages_save_info.json, prepare docroot resources
+    packages_dic = get_json_dic(packages_save_info_file)
+    #3333 
+    sorted_test_suite_list = sorted(packages_dic.iteritems(), key=operator.itemgetter(0))
+    save_path = None
+
+    for test_suite, save_test_suite_dic in sorted_test_suite_list:
+        for save_path, package_name in save_test_suite_dic.iteritems():
+            package_file = "%s/%s/%s" % (repo_dir, save_path, package_name)
+            os.system("unzip %s -d %s/packages" % (package_file, tinyweb_docroot_path))
+
+    os.system("unzip %s/%s/docroot/webapi-service-docroot-tests-%s-1.apk.zip -d %s" % (repo_dir, save_path, save_path.split('/')[-1], middle_tmp_dir))
+    os.system("unzip %s/webapi-service-docroot-tests/docroot.zip -d %s" % (middle_tmp_dir, middle_tmp_dir))
+    os.system("cp -r %s/docroot/opt %s" % (middle_tmp_dir, tinyweb_docroot_path)) 
+    os.system("env LD_LIBRARY_PATH=%(tinyweb_path)s PATH=$PATH:%(tinyweb_path)s tinyweb -ssl_certificate %(tinyweb_path)s/server.pem -document_root %(docroot_path)s -listening_ports 8080,8081,8082,8083,8084,8443s; sleep 3s" % {"tinyweb_path": tinyweb_path, "docroot_path": tinyweb_docroot_path} )
 
 
 def active_tinyweb_android(device_name, device_id, branch, version, segment, mode, device_arch):
@@ -248,7 +294,17 @@ def preinstall_runtimelib_android(device_name, device_id, branch, version, arch)
             if output.find("Success") != -1:
                 return True
             else:
-                nt_logger.error("Fail to intall runtimelib on '%s(%s)' [%s]" % (device_name, device_id, output))
+                nt_logger.error("Error: Fail to intall 'XWalkRuntimeLib.apk' on '%s(%s)' with [%s]" % (device_name, device_id, output))
+                if output.find("INSTALL_FAILED_INSUFFICIENT_STORAGE") != -1:
+                    nt_logger.debug("Reboot '%s(%s)', to fix 'INSTALL_FAILED_INSUFFICIENT_STORAGE'" % (device_name, device_id))
+                    os.system("adb -s %s reboot" % device_id)
+                    time.sleep(30)
+                    inst_status1, inst_output1 = commands.getstatusoutput("adb -s %s install %s" % (device_id, runtimelib_apk))
+                    if inst_status1 != 0:
+                        nt_logger.error("Error: Fail to re-install 'XWalkRuntimeLib.apk' on '%s(%s)' with [%s]" % (device_name, device_id, inst_output1))
+                        return False
+                    else:
+                        return True
                 return False
         else:
             nt_logger.error("No such 'XWalkRuntimeLib.apk' for '%s(%s)'" % (device_name, device_id))
@@ -256,6 +312,14 @@ def preinstall_runtimelib_android(device_name, device_id, branch, version, arch)
     else:
         nt_logger.error("No such 'crosswalk-apks-%s-%s.zip' for '%s(%s)'" % (version, arch, device_name, device_id))
         return False
+
+
+def upload_onto_wrs(result_dir_path):
+    if is_upload_report:
+        upload_status = upload(result_dir_path)
+        nt_logger.debug("Upload '%s' report to WRS status: [%s]" % (result_dir_path, upload_status))
+    else:
+        nt_logger.debug("Skip to upload report to WRS")
 
 
 def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
@@ -279,37 +343,77 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
             bk_http_proxy = os.environ["http_proxy"]
             os.environ["http_proxy"] = ""
 
-    for segment in segment_list:
-        path_type = get_map_url_type(branch, version, segment, mode, device_arch, crosswalk_type, test_platform)
-        sorted_test_list = sorted(test_list_dic.iteritems(), key=operator.itemgetter(0))
-        for test_suite_name, info_dic in sorted_test_list:
-            test_package = get_test_package(test_suite_name, path_type)
-            if test_package:
-                unzip_to_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, device_name, device_id, version, segment)
-                unzip_test_package(test_package, unzip_to_dir)
-                uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
-                install_status = install_test_package(test_suite_name, test_package, device_name, device_id, unzip_to_dir)
-                if install_status:
-                    if test_suite_name in aio_test_suite_list:
-                        aio_name = test_suite_name
-                        if test_platform == "android" and test_suite_name == "webapi-service-tests":
-                            if not is_tinyweb_active_android(device_name, device_id):
-                                status = active_tinyweb_android(device_name, device_id, branch, version, segment, mode, device_arch)
-                                if not status:
-                                    nt_logger.debug("Skip test '%s'" % test_suite_name)
-                                    continue
-                        sub_sorted_test_list = sorted(info_dic.iteritems(), key=operator.itemgetter(0))
-                        for sub_test_suite_name, sub_info_dic in sub_sorted_test_list:
-                            test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, aio_name)
-                    else:
-                        test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment)
+    if test_platform == "android":
+        for segment in segment_list:
+            path_type = get_map_url_type(branch, version, segment, mode, device_arch, crosswalk_type, test_platform)
+            sorted_test_list = sorted(test_list_dic.iteritems(), key=operator.itemgetter(0))
+            for test_suite_name, info_dic in sorted_test_list:
+                test_package = get_test_package(test_suite_name, path_type)
+                if test_package:
+                    unzip_to_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, device_name, device_id, version, segment)
+                    unzip_test_package(test_package, unzip_to_dir)
                     uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
+                    install_status = install_test_package(test_suite_name, test_package, device_name, device_id, unzip_to_dir)
+                    if install_status:
+                        if test_suite_name in aio_test_suite_list:
+                            aio_name = test_suite_name
+                            if test_platform == "android" and test_suite_name == "webapi-service-tests":
+                                if not is_tinyweb_active_android(device_name, device_id):
+                                    status = active_tinyweb_android(device_name, device_id, branch, version, segment, mode, device_arch)
+                                    if not status:
+                                        nt_logger.debug("Skip test '%s'" % test_suite_name)
+                                        continue
+                            sub_sorted_test_list = sorted(info_dic.iteritems(), key=operator.itemgetter(0))
+                            for sub_test_suite_name, sub_info_dic in sub_sorted_test_list:
+                                test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, aio_name)
+                        else:
+                            test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment)
+                        uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
+                    else:
+                        nt_logger.debug("Skip test '%s'" % test_suite_name)
+            result_dir = "%s/%s/%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, crosswalk_type, test_platform, segment, branch, device_name, mode, version, START_TEST_TIME, flag)
+            upload_onto_wrs(result_dir)
+    elif test_platform == "windows":
+        for segment in segment_list:
+            result_dir = "%s/%s/%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, crosswalk_type, test_platform, segment, branch, device_name, mode, version, START_TEST_TIME, flag)
+            sorted_test_list = sorted(test_list_dic.iteritems(), key=operator.itemgetter(0))
+            for test_suite_name, info_dic in sorted_test_list:
+                inst_file = "%s/packages/opt/%s/inst.py" % (tinyweb_docroot_path, test_suite_name)
+                if os.path.exists(inst_file):
+                    print ">>>>>>>>>>>>>>>>>>>>>>>>>>>> Test '%s' on '%s' <<<<<<<<<<<<<<<<<<<<<<<<<<<<<" % (test_suite_name, device_name)
+                    kill_stub_status, kill_stub_output = commands.getstatusoutput("curl http://%s:9000/kill_stub" % device_id)
+                    time.sleep(3)
+                    launch_stub_status, launch_stub_output = commands.getstatusoutput("curl http://%s:9000/launch_stub" % device_id)
+                    time.sleep(3)
+                    print ">>>1. Uninstall existed '%s' on '%s' firstly ..." % (test_suite_name, device_name)
+                    uninst_status, uninst_output = commands.getstatusoutput("python %s -d %s -u" % (inst_file, device_id))
+                    print "===>Uninstall existed '%s' on '%s' [%d] [%s]" % (test_suite_name, device_name, uninst_status, uninst_output)
+                    if uninst_status == 0:
+                        print ">>>2. Install '%s' on '%s' ..." % (test_suite_name, device_name)
+                        inst_status, inst_output = commands.getstatusoutput("python %s -d %s -m %s" % (inst_file, device_id, host_id))
+                        print "===>Install '%s' on '%s' [%s] [%s]" % (test_suite_name, device_name, inst_status, inst_output)
+                        if inst_status == 0:
+                            result_file = "%s/result_%s.xml" % (result_dir, test_suite_name)
+                            print ">>>3. Run '%s' with testkit-lite on '%s' ..." % (test_suite_name, device_name)
+                            input_file = "%s/packages/opt/%s/tests.xml" % (tinyweb_docroot_path, test_suite_name)
+                            exe_status, exe_output = commands.getstatusoutput("testkit-lite -f %s -A --comm windowshttp --deviceid %s -o %s" % (input_file, device_id, result_file))
+                            print "===>Execute '%s' on '%s' [%s]" % (test_suite_name, device_name, exe_status)
+                            print exe_output
+                            #kill_stub_status, kill_stub_output = commands.getstatusoutput("curl http://%s:9000/kill_stub" % device_id)
+                            #time.sleep(3)
+                            launch_stub_status, launch_stub_output = commands.getstatusoutput("curl http://%s:9000/launch_stub" % device_id)
+                            time.sleep(3)
+                            print ">>>4. Uninstall '%s' on '%s' finally ..." % (test_suite_name, device_name)
+                            uninst_status, uninst_output = commands.getstatusoutput("python %s -d %s -u" % (inst_file, device_id))
+                            print "===>Uninstall '%s' on '%s' [%d] [%s]" % (test_suite_name, device_name, uninst_status, uninst_output)
+                        else:
+                            print "####Skip test '%s' on '%s' for [%d: %s]" % (test_suite_name, device_name, inst_status, inst_output)
+                    else:
+                        print "####Skip test '%s' on '%s' for [%d: %s]" % (test_suite_name, device_name, uninst_status, uninst_output)
                 else:
-                    nt_logger.debug("Skip test '%s'" % test_suite_name)
-        result_dir = "%s/%s/%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, crosswalk_type, test_platform, segment, branch, device_name, mode, version, START_TEST_TIME, flag)
-        if is_upload_report:
-            upload_status = upload(result_dir)
-            nt_logger.debug("Upload report to WRS status: [%s]" % upload_status)
+                    print "No such inst.py as '%s'" % inst_file
+            stop_tinyweb_windows()
+            upload_onto_wrs(result_dir)
 
     send_stauts = send_mail(result_dir)
     nt_logger.debug("Send mail status: [%s]" % send_stauts)
@@ -383,6 +487,12 @@ def execute():
 
     if not os.path.isfile(update_device_config_file):
         return False
+
+    if not os.path.isfile(packages_save_info_file):
+        return False
+
+    if test_platform == "windows":
+        launch_tinyweb_windows()
 
     global update_device_config_dic
     update_device_config_dic = get_json_dic(update_device_config_file)

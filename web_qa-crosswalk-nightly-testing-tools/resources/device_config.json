@@ -1,4 +1,40 @@
 {
+  "Acer_Aspire_5349": {
+    "device_arch": "x86_64",
+    "device_os": "windows",
+    "device_type": "laptop",
+    "windows_version": "Windows10",
+    "assignments": {
+      "10.239.52.3": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
+  "Dell_OptiPlex_9020": {
+    "device_arch": "x86_64",
+    "device_os": "windows",
+    "device_type": "desktop",
+    "windows_version": "Windows8.1",
+    "assignments": {
+      "10.239.52.99": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 0
+      }
+    },
+    "is_tested": 0
+  },
   "ASUS_MeMO_Pad_8_K011": {
     "android_version": "4.4.2",
     "device_arch": "x86",
@@ -14,7 +50,7 @@
         },
         "rerun_flag": 0
       },
-      "E6OKCY410660": {
+      "E6OKCY410891": {
         "target_binary": {
           "branch": "master",
           "mode": "embedded",
@@ -23,7 +59,7 @@
         },
         "rerun_flag": 0
       },
-      "E6OKCY410928": {
+      "E6OKCY410956": {
         "target_binary": {
           "branch": "master",
           "mode": "embedded",
@@ -81,7 +117,7 @@
       "AGND3R7DA4B04A": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["crosswalk"]
         },
@@ -198,7 +234,7 @@
       "066f440d2115ab72": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["cordova4.x"]
         },
@@ -234,7 +270,7 @@
       "HT4B4JT02705": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["cordova4.x"]
         },
@@ -342,7 +378,7 @@
       "A3P41788C4B2": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["crosswalk"]
         },
@@ -351,7 +387,7 @@
       "A3P4107F52CD": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["crosswalk"]
         },
@@ -360,14 +396,14 @@
       "A3P4036DF47F": {
         "target_binary": {
           "branch": "beta",
-          "mode": "shared",
+          "mode": "embedded",
           "version": "18.48.477.13",
           "segment_list": ["crosswalk"]
         },
         "rerun_flag": 0
       }
     },
-    "is_tested": 1
+    "is_tested": 0
   },
   "ZTE_Grand_Memo_U5": {
     "android_version": "4.1.2",

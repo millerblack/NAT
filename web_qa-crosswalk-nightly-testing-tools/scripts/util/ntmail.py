@@ -31,12 +31,15 @@ def generate_report_mail_summary(result_dir, binary_branch, binary_version, devi
     device_info = "%s (%s) - %s Version: %s\n\n" % (device_name.replace("_", " "), device_type.capitalize(), test_platform.capitalize(), platform_version)
     host_info = ''
     host_info_list = []
-    host_infos_dic = settings_dic["host_infos"]
+    host_name_info = "Host Name: %s%s" % (get_host_name(), domain_name)
+    host_system_info = "Host OS: "
 
-    for key, value in host_infos_dic.iteritems():
-        host_iterm = '%s: %s' % (key, value)
-        host_info_list.append(host_iterm)
+    with open("/etc/issue") as issue_file:
+        ubuntu_info = issue_file.read().strip('\n')
+        host_system_info += ubuntu_info[:ubuntu_info.find("\\n")-1]
 
+    host_info_list.append(host_name_info)
+    host_info_list.append(host_system_info)
     host_info = '\n'.join(host_info_list)
     details_info = ''
     details_info_list = []
@@ -100,6 +103,8 @@ def send_mail(result_dir):
 
     try:
         mail_object =  mail_settings_dic["mail_object"]
+        if is_webdriver:
+            mail_object += '-webdriver'
         mail_user = mail_settings_dic["mail_user"]
         mail_from = "%s<%s@%s>" % (mail_user, mail_user, mail_settings_dic["mail_postfix"])
         mail_list = mail_settings_dic["mail_list"]

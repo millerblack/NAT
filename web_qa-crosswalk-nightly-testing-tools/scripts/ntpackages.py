@@ -179,7 +179,9 @@ def get_actural_test_dic(spec_file):
     for ts in test_suite_list:
         ts_detail_dic = base_test_dic.get(ts, None)
         if ts_detail_dic:
-            all_in_one_name = ts_detail_dic.get('all_in_one', None)
+            all_in_one_name = None
+            if test_platform == "android":
+                all_in_one_name = ts_detail_dic.get('all_in_one', None)
             if all_in_one_name:
                 if actural_test_dic.has_key(all_in_one_name):
                     sub_dic = actural_test_dic[all_in_one_name]
@@ -354,6 +356,14 @@ def prepare_packages():
                         process = multiprocessing.Process(target=download_packages, args=(save_dir, packages_url, branch, version))
                         process.start()
                         process_list.append(process)
+            if test_platform == "windows":
+                #download web sevice docroot resources for windows
+                #http://jiaxxx-dev.sh.intel.com/ForNightlyAutoTest/android/master/20.50.530.0/testsuites-embedded/x86/webapi-service-docroot-tests-20.50.530.0-1.apk.zip
+                docroot_file = "%s/%s/%s/%s/%s/docroot/webapi-service-docroot-tests-%s-1.apk.zip" % (repo_dir, crosswalk_type, test_platform, branch, version, version)
+                if not os.path.exists(docroot_file):
+                    docroot_file_url = "%s/%s/android/%s/%s/testsuites-embedded/x86/webapi-service-docroot-tests-%s-1.apk.zip" % (package_release_server_url, crosswalk_type, branch, version, version)
+                    docroot_save_dir = "%s/%s/%s/%s/%s/docroot" % (repo_dir, crosswalk_type, test_platform, branch, version)
+                    download_by_wget(docroot_file_url, docroot_save_dir)
 
     for process in process_list:
         process.join()
