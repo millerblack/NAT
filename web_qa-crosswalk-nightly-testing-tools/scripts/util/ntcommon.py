@@ -11,6 +11,7 @@ import time
 import logging
 import ConfigParser
 import socket
+import plistlib
 
 
 util_module_path = os.path.dirname(os.path.abspath(__file__))
@@ -506,3 +507,11 @@ def get_host_ip():
        host_ip = settings_dic["host_ip"]
 
     return host_ip
+
+
+def get_macbook_system_info():
+    info = None
+    mac_dic = plistlib.readPlist("/System/Library/CoreServices/SystemVersion.plist")
+    info = "%s %s(%s)" % (mac_dic['ProductName'], mac_dic['ProductUserVisibleVersion'], mac_dic['ProductBuildVersion'])
+
+    return info

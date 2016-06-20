@@ -7,10 +7,12 @@ import sys
 import subprocess
 import glob
 import operator
+import platform
 
 from util.ntcommon import *
 from util.ntreport import *
 from util.ntmail import *
+from util.get_rerun_config_info import get_rerun_test_dic
 import ntpackages
 
 
@@ -180,7 +182,7 @@ def kill_testkit_process(device_name, device_id, test_suite_name):
     time.sleep(20)
 
 
-def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch):
+def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch, rflag):
     nt_logger.debug("Call Function: 'invoke_testkit' with test_suite_name(%s), device_name(%s), device_id(%s), input_file(%s), output_file(%s), timeout(%s), vtest_platform(%s), aio_name(%s), branch(%s), version(%s), segment(%s), mode(%s), device_arch(%s)" % (test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch))
     nt_logger.debug("[%s] Start to run '%s' on '%s(%s)' by testkit-lite ..." % (time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime()), test_suite_name, device_name, device_id))
     #testkit_parameters are composite of common parmeters and extra parameters
@@ -202,6 +204,18 @@ def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_f
 
     if segment.find('cordova') != -1:
         testkit_cmd += " -e CordovaLauncher"
+
+    if platform.system() == 'Darwin':
+        testkit_cmd += " --non-active"
+
+    rerun_config_file = "%s/%s/rerun_test_list.json" % (resources_dir, device_name)
+
+    if rflag and os.path.exists(rerun_config_file):
+        rerun_dic = get_rerun_test_dic(rerun_config_file)
+        if rerun_dic[test_suite_name]['level'] == 2:#case-level
+            case_list = rerun_dic[test_suite_name]["case_list"]
+            case_id_str = ' '.join(case_list)
+            testkit_cmd += " --id %s" % case_id_str
 
     nt_logger.debug("Run '%s' on %s(%s)" % (testkit_cmd, device_name, device_id))
     test_proc = subprocess.Popen(args=testkit_cmd, shell=True)
@@ -232,8 +246,8 @@ def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_f
     nt_logger.debug("[%s] End to run '%s' on '%s(%s)' by testkit-lite ..." % (time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime()), test_suite_name, device_name, device_id))
 
 
-def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, aio_name=None):
-    nt_logger.debug("Call Function: 'test_action' with test_suite_name(%s), test_suite_info_dic(%s), device_name(%s), device_id(%s), device_arch(%s), binary_branch(%s), binary_version(%s), mode(%s), unzip_to_dir(%s), flag(%s), segment_type(%s), aio_name(%s)" % (test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, aio_name))
+def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, rflag, aio_name=None):
+    nt_logger.debug("Call Function: 'test_action' with test_suite_name(%s), test_suite_info_dic(%s), device_name(%s), device_id(%s), device_arch(%s), binary_branch(%s), binary_version(%s), mode(%s), unzip_to_dir(%s), flag(%s), segment_type(%s), rflag(%d), aio_name(%s)" % (test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, rflag, aio_name))
     all_in_one_name = test_suite_info_dic.get("all_in_one", None)
     precondition_flag = test_suite_info_dic["precondition"]
     timeout = test_suite_info_dic["timeout"] * 60
@@ -266,12 +280,12 @@ def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, de
             }
             pc = Precondition(precondition_parameter_dic)
             pc.set_precondition()
-            invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch)
+            invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch, rflag)
             pc.restore_precondition()
         else:
             nt_logger.error("No such 'Precontion.py' script for ['%s'], please add it." % test_suite_name)
     else:
-        invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch)
+        invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch, rflag)
 
 
 def uninstall_runtimelib_android(device_name, device_id):
@@ -322,8 +336,8 @@ def upload_onto_wrs(result_dir_path):
         nt_logger.debug("Skip to upload report to WRS")
 
 
-def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
-    nt_logger.debug("Call Function: 'test_handle' with device_name(%s), device_arch(%s), device_id(%s), target_binary_dic(%s), flag(%s)" % (device_name, device_arch, device_id, target_binary_dic, flag))
+def test_handle(device_name, device_arch, device_id, target_binary_dic, flag, rflag):
+    nt_logger.debug("Call Function: 'test_handle' with device_name(%s), device_arch(%s), device_id(%s), target_binary_dic(%s), flag(%s), rflag(%d)" % (device_name, device_arch, device_id, target_binary_dic, flag, rflag))
     test_list_dic = get_test_list_dic(device_name, flag)
     branch = target_binary_dic["branch"]
     version = target_binary_dic["version"]
@@ -365,9 +379,9 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
                                         continue
                             sub_sorted_test_list = sorted(info_dic.iteritems(), key=operator.itemgetter(0))
                             for sub_test_suite_name, sub_info_dic in sub_sorted_test_list:
-                                test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, aio_name)
+                                test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, rflag, aio_name)
                         else:
-                            test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment)
+                            test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, rflag)
                         uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
                     else:
                         nt_logger.debug("Skip test '%s'" % test_suite_name)
@@ -424,8 +438,8 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
             os.environ["http_proxy"] = bk_http_proxy
 
 
-def run_test(device_name, device_arch, id_list):
-    nt_logger.debug("Call Function: 'run_test' with device_name(%s), device_arch(%s), id_list(%s)" % (device_name, device_arch, id_list))
+def run_test(device_name, device_arch, id_list, rflag=0):
+    nt_logger.debug("Call Function: 'run_test' with device_name(%s), device_arch(%s), id_list(%s), rflag(%d)" % (device_name, device_arch, id_list, rflag))
     thread_list = []
     id_list.sort()#sort by alph order
     id_list_len = len(id_list)
@@ -438,6 +452,7 @@ def run_test(device_name, device_arch, id_list):
         if not target_binary_dic:
             assignments_device_info_dic = update_device_config_dic[device_name]["assignments"][device_id]
             target_binary_dic = assignments_device_info_dic.get("target_binary", None)
+            rflag = assignments_device_info_dic["rerun_flag"]
             if not target_binary_dic:
                 nt_logger.error("Please configure resources/device_config.josn follow README.md")
                 return
@@ -448,7 +463,7 @@ def run_test(device_name, device_arch, id_list):
                 if assignments_device_info_dic.has_key("no_update"):
                     nt_logger.debug("No new released version, skip test on '%s(%s)'" % (device_name, device_id))
                     return
-        thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag))
+        thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag, rflag))
         thread.start()
         thread_list.append(thread)
     elif id_list_len > 1:
@@ -467,7 +482,8 @@ def run_test(device_name, device_arch, id_list):
                     i += 1
                     continue
             target_binary_dic = id_info_dic["target_binary"]
-            thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag))
+            rflag = id_info_dic["rerun_flag"]
+            thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag, rflag))
             thread.start()
             thread_list.append(thread)
             i += 1
@@ -510,7 +526,8 @@ def execute():
                     nt_logger.debug("No new released version, skip test on '%s'" % device_name)
                     continue
                 id_list = device_info_dic["id_list"]
-                process = multiprocessing.Process(target=run_test, args=(device_name, device_arch, id_list))
+                rerurn_flag = device_info_dic["rerurn_flag"]
+                process = multiprocessing.Process(target=run_test, args=(device_name, device_arch, id_list, rerurn_flag))
                 process.start()
                 process_list.append(process)
         elif device_info_dic.has_key("assignments"):

@@ -262,7 +262,7 @@
     "is_tested": 0
   },
   "Google_Nexus_9": {
-    "android_version": "5.0",
+    "android_version": "5.1.1",
     "device_arch": "arm64",
     "device_os": "android",
     "device_type": "tablet",

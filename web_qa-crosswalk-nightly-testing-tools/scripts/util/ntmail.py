@@ -1,6 +1,7 @@
 #import mimetypes
 import os
 import smtplib
+import platform
 from email.mime.image import MIMEImage
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -32,11 +33,18 @@ def generate_report_mail_summary(result_dir, binary_branch, binary_version, devi
     host_info = ''
     host_info_list = []
     host_name_info = "Host Name: %s%s" % (get_host_name(), domain_name)
+
+    if platform.system() == 'Darwin':
+        host_name_info = "Host Name: %s" % get_host_name()
+
     host_system_info = "Host OS: "
 
-    with open("/etc/issue") as issue_file:
-        ubuntu_info = issue_file.read().strip('\n')
-        host_system_info += ubuntu_info[:ubuntu_info.find("\\n")-1]
+    if platform.system() != 'Darwin':
+        with open("/etc/issue") as issue_file:
+            ubuntu_info = issue_file.read().strip('\n')
+            host_system_info += ubuntu_info[:ubuntu_info.find("\\n")-1]
+    else:
+        host_system_info += get_macbook_system_info()
 
     host_info_list.append(host_name_info)
     host_info_list.append(host_system_info)
