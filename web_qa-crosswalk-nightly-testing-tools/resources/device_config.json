@@ -1,4 +1,23 @@
 {
+  "MinnowBoard_MAX": {
+    "device_arch": "x86_64",
+    "device_os": "iot",
+    "device_type": "desktop",
+    "iot_os_type": "linux",
+    "iot_version": "IoTLinux",
+    "assignments": {
+      "10.239.115.33": {
+        "target_binary": {
+          "branch": "master",
+          "mode": "embedded",
+          "version": "latest",
+          "segment_list": ["crosswalk"]
+        },
+        "rerun_flag": 1
+      }
+    },
+    "is_tested": 1
+  },
   "Acer_Aspire_5349": {
     "device_arch": "x86_64",
     "device_os": "windows",
@@ -69,7 +88,7 @@
         "rerun_flag": 0
       }
     },
-    "is_tested": 1
+    "is_tested": 0
   },
   "ASUS_T00E_Padfone_Mini": {
     "android_version": "4.3",
@@ -231,14 +250,14 @@
     "device_os": "android",
     "device_type": "phone",
     "assignments": {
-      "066f440d2115ab72": {
+      "0361972f828e0d0d": {
         "target_binary": {
           "branch": "beta",
-          "mode": "embedded",
-          "version": "18.48.477.13",
+          "mode": "shared",
+          "version": "latest",
           "segment_list": ["cordova4.x"]
         },
-        "rerun_flag": 0
+        "rerun_flag": 1
       }
     },
     "is_tested": 0

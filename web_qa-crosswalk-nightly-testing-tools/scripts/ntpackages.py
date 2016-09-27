@@ -228,6 +228,8 @@ def get_packages_url(spec_file_arch, url_type, packages_save_info_dic):
         if all_packages_url:
             actural_test_dic = get_actural_test_dic(spec_file)
             test_suite_list = actural_test_dic.keys()
+            if is_need_webserive_resources(test_suite_list):
+                test_suite_list.append("webapi-service-docroot-tests")
             for ts in test_suite_list:
                 exit_flag = False
                 pacakge_name = None

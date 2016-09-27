@@ -11,7 +11,6 @@ import time
 import logging
 import ConfigParser
 import socket
-import plistlib
 
 
 util_module_path = os.path.dirname(os.path.abspath(__file__))
@@ -76,6 +75,16 @@ def get_nt_logger(vlevel):
     return lg
 
 
+def get_webservice_test_list(test_dic):
+    webservice_test_list = []
+
+    for test_suite_name, info_dic in test_dic.iteritems():
+        if info_dic.get("all_in_one", None) == "webapi-service-tests":
+            webservice_test_list.append(test_suite_name)
+
+    return sorted(webservice_test_list)
+
+
 device_config_dic, settings_dic, base_test_dic = load()
 
 log_level = settings_dic['log_level']
@@ -86,6 +95,7 @@ crosswalk_release_server_url = settings_dic["crosswalk_release_server_url"]
 crosswalk_release_server_url_internal = settings_dic["crosswalk_release_server_url_internal"]
 crosswalk_type = settings_dic["crosswalk_type"]#TODO:upgrade together with QiuZong
 test_platform = settings_dic["test_platform"]
+iot_os_type = settings_dic["iot_os_type"]
 xwalkdriver_path = settings_dic["xwalkdriver_path"]
 is_webdriver = settings_dic["is_webdriver"]
 open_source_projects_dir = settings_dic["open_source_projects_dir"]
@@ -117,6 +127,13 @@ def get_latest_version(server_url, vcrosswalk_type, vtest_platform, branch):
         nt_logger.error("ERROR! %s . Please check your network connect status." % e)
         return "error"
 
+    if vtest_platform == "iot":
+        try:
+            iot_listen_page = urllib2.urlopen("%s/latest" % url)
+        except Exception, e:
+            nt_logger.error("ERROR! %s . Please check your network connect status." % e)
+            return "error"
+        return "latest"
     content = listen_page.read()
     reobj = re.compile(dir_pattern)
     version_infos_list = reobj.findall(content)
@@ -284,6 +301,17 @@ def generate_download_cordova_test_spec():
     shutil.copy(cordova_test_spec, download_cordova_test_spec)
 
 
+def is_need_webserive_resources(test_suite_list):
+    ret =  False
+    webservice_test_suite_list = get_webservice_test_list(base_test_dic)
+
+    for test_suite in test_suite_list:
+        if test_suite in webservice_test_suite_list:
+            ret = True
+
+    return ret
+
+
 def generate_merged_download_spec(arch, device_list):
     nt_logger.debug("Call Function: 'generate_merged_download_spec' with arch(%s), device_list(%s)" % (arch, device_list))
     #Regardless of "branch" & "version" & "mode", the test scope is up to "arch".
@@ -297,6 +325,10 @@ def generate_merged_download_spec(arch, device_list):
         merged_spec_files.append(merged_test_list_spec)
 
     merged_download_test_suite_list = get_merged_test_suite_list(merged_spec_files)
+
+    #if is_need_webserive_resources(merged_download_test_suite_list):
+    #    merged_download_test_suite_list.append("webapi-service-docroot-tests")
+
     generate_spec_file(merged_download_test_suite_list, download_spec_file)
 
 
@@ -394,6 +426,8 @@ def get_map_url_type(branch, version, segment, mode, arch, vcrosswalk_type, vtes
 
     if vtest_platform == "android":
         map_url_type += "/%s-%s/%s" % (segment.replace("crosswalk", "testsuites"), mode, arch)
+    elif vtest_platform == "iot":
+        map_url_type += "/%s-%s/%s/%s" % (segment.replace("crosswalk", "testsuites"), mode, arch, iot_os_type)
 
     return map_url_type
 
@@ -435,11 +469,12 @@ def download(save_dir, url):
     nt_logger.debug("Call Function: 'download' with save_dir(%s), url(%s)" % (save_dir, url))
     download_by_wget(url, save_dir)
 
-    if url.find("webapi-service-tests") != -1:
-        #TODO: Optimize by saving html file as local file, and search the docroot package's name, currently, hard code
-        docroot_url = url.replace("webapi-service-tests", "webapi-service-docroot-tests").replace("3.6", "1")
-        download_by_wget(docroot_url, save_dir)
-    elif url.find("wrt-manifest-android-tests") != -1:
+    #if url.find("webapi-service-tests") != -1:
+    #    #TODO: Optimize by saving html file as local file, and search the docroot package's name, currently, hard code
+    #    docroot_url = url.replace("webapi-service-tests", "webapi-service-docroot-tests").replace("3.6", "1")
+    #    download_by_wget(docroot_url, save_dir)
+    #elif url.find("wrt-manifest-android-tests") != -1:
+    if url.find("wrt-manifest-android-tests") != -1:
         #download "apks-manifest" folder
         manifest_folder_url = "%s/apks-manifest/apks/%s/" % (url[:url.rstrip('/').rfind('/')], url.rstrip('/').split('/')[-2])
         download_by_wget(manifest_folder_url, "%s/apks-manifest/apks/%s" % (save_dir, url.rstrip('/').split('/')[-2]), 1)
@@ -507,11 +542,3 @@ def get_host_ip():
        host_ip = settings_dic["host_ip"]
 
     return host_ip
-
-
-def get_macbook_system_info():
-    info = None
-    mac_dic = plistlib.readPlist("/System/Library/CoreServices/SystemVersion.plist")
-    info = "%s %s(%s)" % (mac_dic['ProductName'], mac_dic['ProductUserVisibleVersion'], mac_dic['ProductBuildVersion'])
-
-    return info

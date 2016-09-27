@@ -7,12 +7,10 @@ import sys
 import subprocess
 import glob
 import operator
-import platform
 
 from util.ntcommon import *
 from util.ntreport import *
 from util.ntmail import *
-from util.get_rerun_config_info import get_rerun_test_dic
 import ntpackages
 
 
@@ -65,6 +63,9 @@ def uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir
     inst_py_file = "%s/opt/%s/inst.py" % (unzip_to_dir, test_suite_name)
 
     if os.path.isfile(inst_py_file):
+        if test_platform == "iot":
+            device_id = "root@%s" % device_id
+        #print "44444444444444444444444444 python %s -s %s -u" % (inst_py_file, device_id)
         uninst_status, uninst_output = commands.getstatusoutput('python %s -s %s -u' % (inst_py_file, device_id))
     else:
         nt_logger.error("No such 'int.py' of '%s', fail to do uninstall" % test_suite_name)
@@ -75,6 +76,10 @@ def install_test_package(test_suite_name, test_package, device_name, device_id, 
     if test_suite_name not in unneed_install_test_suite_list:
         inst_py_file = "%s/opt/%s/inst.py" % (unzip_to_dir, test_suite_name)
         if os.path.isfile(inst_py_file):
+            if test_platform == "iot":
+                device_id = "root@%s" % device_id
+            #print "55555555555555555555555555 python %s -s %s" % (inst_py_file, device_id)
+            #inst_status = 0   
             inst_status, inst_output = commands.getstatusoutput('python %s -s %s' % (inst_py_file, device_id))
             if inst_status != 0:
                 nt_logger.error("Error: Fail to install '%s' on '%s(%s)' with [%s]" % (test_package, test_suite_name, device_id, inst_output))
@@ -105,17 +110,34 @@ def is_tinyweb_active_android(device_name, device_id):
     return output != ''
 
 
+def is_tinyweb_active_iot(device_name, device_id):
+    nt_logger.debug("Call Function: 'is_tinyweb_active_iot' with device_name(%s), device_id(%s)" % (device_name, device_id))
+    output = commands.getoutput("ssh root@%s 'pgrep -a tinyweb'" % device_id)
+    return output != ''
+
+
+#def launch_tinyweb_iot():
+##url = "http://qawt13.sh.intel.com/ForNightlyAutoTest/crosswalk/iot/master/23.52.572.0/testsuites-embedded/x86_64/linux/"
+##listen_page = get_listen_page(url)
+##pattern = ".*webapi-service-docroot-tests.*"
+##reobj = re.compile(pattern)
+##packages_url_infos = reobj.findall(listen_page)
+##print packages_url_infos[0].split('href="')[1].split('">')[0]
+#    print "8888888888888888888888888888888 call launch_tinyweb_iot"
+#    pass
+
+
 def ready_docroot_for_tinyweb(device_name, device_id, branch, version, segment, mode, device_arch):
     nt_logger.debug("Call Function: 'ready_docroot_for_tinyweb' with device_name(%s), device_id(%s), branch(%s), version(%s), segment(%s), mode(%s), device_arch(%s)" % (device_name, device_id, branch, version, segment, mode, device_arch))
-    docroot_package = None
     path_type = get_map_url_type(branch, version, segment, mode, device_arch, crosswalk_type, test_platform)
-    tmp_list = glob.glob("%s/%s/webapi-service-docroot-tests*zip" % (repo_dir, path_type))
+    docroot_package = get_test_package("webapi-service-docroot-tests", path_type)
 
-    if tmp_list:
-        docroot_package = tmp_list[0]
+    if docroot_package:
         unzip_to_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, device_name, device_id, version, segment)
         unzip_test_package(docroot_package, unzip_to_dir)
         inst_py_file = "%s/webapi-service-docroot-tests/inst.py" % unzip_to_dir
+        if test_platform == "iot":
+            device_id = "root@%s" % device_id
         inst_status, inst_output = commands.getstatusoutput('python %s -s %s' % (inst_py_file, device_id))
         nt_logger.debug("inst_output '%s'" % inst_output)
         return True
@@ -182,7 +204,7 @@ def kill_testkit_process(device_name, device_id, test_suite_name):
     time.sleep(20)
 
 
-def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch, rflag):
+def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch):
     nt_logger.debug("Call Function: 'invoke_testkit' with test_suite_name(%s), device_name(%s), device_id(%s), input_file(%s), output_file(%s), timeout(%s), vtest_platform(%s), aio_name(%s), branch(%s), version(%s), segment(%s), mode(%s), device_arch(%s)" % (test_suite_name, device_name, device_id, input_file, output_file, timeout, vtest_platform, aio_name, branch, version, segment, mode, device_arch))
     nt_logger.debug("[%s] Start to run '%s' on '%s(%s)' by testkit-lite ..." % (time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime()), test_suite_name, device_name, device_id))
     #testkit_parameters are composite of common parmeters and extra parameters
@@ -204,18 +226,6 @@ def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_f
 
     if segment.find('cordova') != -1:
         testkit_cmd += " -e CordovaLauncher"
-
-    if platform.system() == 'Darwin':
-        testkit_cmd += " --non-active"
-
-    rerun_config_file = "%s/%s/rerun_test_list.json" % (resources_dir, device_name)
-
-    if rflag and os.path.exists(rerun_config_file):
-        rerun_dic = get_rerun_test_dic(rerun_config_file)
-        if rerun_dic[test_suite_name]['level'] == 2:#case-level
-            case_list = rerun_dic[test_suite_name]["case_list"]
-            case_id_str = ' '.join(case_list)
-            testkit_cmd += " --id %s" % case_id_str
 
     nt_logger.debug("Run '%s' on %s(%s)" % (testkit_cmd, device_name, device_id))
     test_proc = subprocess.Popen(args=testkit_cmd, shell=True)
@@ -246,8 +256,8 @@ def invoke_testkit(test_suite_name, device_name, device_id, input_file, output_f
     nt_logger.debug("[%s] End to run '%s' on '%s(%s)' by testkit-lite ..." % (time.strftime('%Y-%m-%d-%H:%M:%S', time.localtime()), test_suite_name, device_name, device_id))
 
 
-def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, rflag, aio_name=None):
-    nt_logger.debug("Call Function: 'test_action' with test_suite_name(%s), test_suite_info_dic(%s), device_name(%s), device_id(%s), device_arch(%s), binary_branch(%s), binary_version(%s), mode(%s), unzip_to_dir(%s), flag(%s), segment_type(%s), rflag(%d), aio_name(%s)" % (test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, rflag, aio_name))
+def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, aio_name=None):
+    nt_logger.debug("Call Function: 'test_action' with test_suite_name(%s), test_suite_info_dic(%s), device_name(%s), device_id(%s), device_arch(%s), binary_branch(%s), binary_version(%s), mode(%s), unzip_to_dir(%s), flag(%s), segment_type(%s), aio_name(%s)" % (test_suite_name, test_suite_info_dic, device_name, device_id, device_arch, binary_branch, binary_version, mode, unzip_to_dir, flag, segment_type, aio_name))
     all_in_one_name = test_suite_info_dic.get("all_in_one", None)
     precondition_flag = test_suite_info_dic["precondition"]
     timeout = test_suite_info_dic["timeout"] * 60
@@ -280,12 +290,12 @@ def test_action(test_suite_name, test_suite_info_dic, device_name, device_id, de
             }
             pc = Precondition(precondition_parameter_dic)
             pc.set_precondition()
-            invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch, rflag)
+            invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch)
             pc.restore_precondition()
         else:
             nt_logger.error("No such 'Precontion.py' script for ['%s'], please add it." % test_suite_name)
     else:
-        invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch, rflag)
+        invoke_testkit(test_suite_name, device_name, device_id, input_file, output_file, timeout, test_platform, aio_name, binary_branch, binary_version, segment_type, mode, device_arch)
 
 
 def uninstall_runtimelib_android(device_name, device_id):
@@ -336,8 +346,8 @@ def upload_onto_wrs(result_dir_path):
         nt_logger.debug("Skip to upload report to WRS")
 
 
-def test_handle(device_name, device_arch, device_id, target_binary_dic, flag, rflag):
-    nt_logger.debug("Call Function: 'test_handle' with device_name(%s), device_arch(%s), device_id(%s), target_binary_dic(%s), flag(%s), rflag(%d)" % (device_name, device_arch, device_id, target_binary_dic, flag, rflag))
+def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
+    nt_logger.debug("Call Function: 'test_handle' with device_name(%s), device_arch(%s), device_id(%s), target_binary_dic(%s), flag(%s)" % (device_name, device_arch, device_id, target_binary_dic, flag))
     test_list_dic = get_test_list_dic(device_name, flag)
     branch = target_binary_dic["branch"]
     version = target_binary_dic["version"]
@@ -379,9 +389,9 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag, rf
                                         continue
                             sub_sorted_test_list = sorted(info_dic.iteritems(), key=operator.itemgetter(0))
                             for sub_test_suite_name, sub_info_dic in sub_sorted_test_list:
-                                test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, rflag, aio_name)
+                                test_action(sub_test_suite_name, sub_info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, aio_name)
                         else:
-                            test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment, rflag)
+                            test_action(test_suite_name, info_dic, device_name, device_id, device_arch, branch, version, mode, unzip_to_dir, flag, segment)
                         uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
                     else:
                         nt_logger.debug("Skip test '%s'" % test_suite_name)
@@ -428,9 +438,41 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag, rf
                     print "No such inst.py as '%s'" % inst_file
             stop_tinyweb_windows()
             upload_onto_wrs(result_dir)
+    elif test_platform == "iot":
+        if iot_os_type == "linux":
+            for segment in segment_list:
+                result_dir = "%s/%s/%s/%s/%s/%s/%s/%s/%s/%s" % (test_result_dir, crosswalk_type, test_platform, segment, branch, device_name, mode, version, START_TEST_TIME, flag)
+                sorted_test_list = sorted(test_list_dic.iteritems(), key=operator.itemgetter(0))
+                for test_suite_name, info_dic in sorted_test_list:
+                    path_type = get_map_url_type(branch, version, segment, mode, device_arch, crosswalk_type, test_platform)
+                    test_package = get_test_package(test_suite_name, path_type)
+                    if test_package:
+                        unzip_to_dir = "%s/unzip_package/%s_%s/%s/%s" % (middle_tmp_dir, device_name, device_id, version, segment)
+                        unzip_test_package(test_package, unzip_to_dir)
+                        uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
+                        install_status = install_test_package(test_suite_name, test_package, device_name, device_id, unzip_to_dir)
+                        print ">>> iot install_status %s" % install_status
+                        if install_status:
+                            aio = info_dic.get('all_in_one', None)
+                            if aio == "webapi-service-tests":
+                                if not is_tinyweb_active_iot(device_name, device_id):
+                                    ready_docroot_for_tinyweb(device_name, device_id, branch, version, segment, mode, device_arch)
+                                    os.system("ssh root@%s '/opt/testkit/tinyweb/tinyweb -ssl_certificate /opt/testkit/tinyweb/server.pem -document_root /opt/docroot -listening_ports 8080,8081,8082,8083,8084,8443s  > /dev/null 2>&1'" % device_id)
+                            result_file = "%s/result_%s.xml" % (result_dir, test_suite_name)
+                            input_file = "%s/opt/%s/tests.xml" % (unzip_to_dir, test_suite_name)
+                            exe_status, exe_output = commands.getstatusoutput("testkit-lite -f %s -A --comm iot --deviceid root@%s -o %s" % (input_file, device_id, result_file))
+                            print ">>>> iot exe_status %s" % exe_status
+                            print ">>>> iot exe_output %s" % exe_output
+                            uninstall_test_package(test_suite_name, device_name, device_id, unzip_to_dir)
+                upload_onto_wrs(result_dir)
+        elif iot_os_type == "windows":
+            #TBD
+            pass
+    else:
+        pass
 
-    send_stauts = send_mail(result_dir)
-    nt_logger.debug("Send mail status: [%s]" % send_stauts)
+    #send_stauts = send_mail(result_dir)
+    #nt_logger.debug("Send mail status: [%s]" % send_stauts)
 
     if is_webdriver and (not is_xwalkdriver_active()):
         kill_xwalkdriver_process()
@@ -438,8 +480,8 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag, rf
             os.environ["http_proxy"] = bk_http_proxy
 
 
-def run_test(device_name, device_arch, id_list, rflag=0):
-    nt_logger.debug("Call Function: 'run_test' with device_name(%s), device_arch(%s), id_list(%s), rflag(%d)" % (device_name, device_arch, id_list, rflag))
+def run_test(device_name, device_arch, id_list):
+    nt_logger.debug("Call Function: 'run_test' with device_name(%s), device_arch(%s), id_list(%s)" % (device_name, device_arch, id_list))
     thread_list = []
     id_list.sort()#sort by alph order
     id_list_len = len(id_list)
@@ -452,7 +494,6 @@ def run_test(device_name, device_arch, id_list, rflag=0):
         if not target_binary_dic:
             assignments_device_info_dic = update_device_config_dic[device_name]["assignments"][device_id]
             target_binary_dic = assignments_device_info_dic.get("target_binary", None)
-            rflag = assignments_device_info_dic["rerun_flag"]
             if not target_binary_dic:
                 nt_logger.error("Please configure resources/device_config.josn follow README.md")
                 return
@@ -463,7 +504,7 @@ def run_test(device_name, device_arch, id_list, rflag=0):
                 if assignments_device_info_dic.has_key("no_update"):
                     nt_logger.debug("No new released version, skip test on '%s(%s)'" % (device_name, device_id))
                     return
-        thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag, rflag))
+        thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag))
         thread.start()
         thread_list.append(thread)
     elif id_list_len > 1:
@@ -482,8 +523,7 @@ def run_test(device_name, device_arch, id_list, rflag=0):
                     i += 1
                     continue
             target_binary_dic = id_info_dic["target_binary"]
-            rflag = id_info_dic["rerun_flag"]
-            thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag, rflag))
+            thread = threading.Thread(target=test_handle, args=(device_name, device_arch, device_id, target_binary_dic, flag))
             thread.start()
             thread_list.append(thread)
             i += 1
@@ -526,8 +566,7 @@ def execute():
                     nt_logger.debug("No new released version, skip test on '%s'" % device_name)
                     continue
                 id_list = device_info_dic["id_list"]
-                rerurn_flag = device_info_dic["rerurn_flag"]
-                process = multiprocessing.Process(target=run_test, args=(device_name, device_arch, id_list, rerurn_flag))
+                process = multiprocessing.Process(target=run_test, args=(device_name, device_arch, id_list))
                 process.start()
                 process_list.append(process)
         elif device_info_dic.has_key("assignments"):

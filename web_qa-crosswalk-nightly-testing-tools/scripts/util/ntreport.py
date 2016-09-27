@@ -222,6 +222,9 @@ def upload(result_dir):
         device_arch = device_config_dic[device_name]["device_arch"]
         device_type = device_config_dic[device_name]["device_type"]
 
+    if platform == "iot":
+        platform = "Ostro"
+        binary_version = settings_dic["ostro_img_build_id"][20:] #2016-09-13_19-23-09-build-66
     binary_branch = binary_branch.replace('master', 'canary')
     bk_http_proxy = os.environ['http_proxy']
     os.environ['http_proxy'] = ''
@@ -239,6 +242,8 @@ def upload(result_dir):
     details_info = ''
     details_info_list = []
     url = "%s/%s/%s/%s/%s" % (settings_dic["package_release_server_url"], xw_type, platform, binary_branch.replace('canary', 'master'), binary_version)
+    if platform == "Ostro":
+        url = "%s/%s/iot/%s/latest" % (settings_dic["package_release_server_url"], xw_type, binary_branch.replace('canary', 'master'))
 
     if not commit_id:
         commit_id = get_commit_id(url)
