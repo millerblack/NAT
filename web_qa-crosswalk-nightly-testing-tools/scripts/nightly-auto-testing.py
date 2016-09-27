@@ -471,8 +471,8 @@ def test_handle(device_name, device_arch, device_id, target_binary_dic, flag):
     else:
         pass
 
-    #send_stauts = send_mail(result_dir)
-    #nt_logger.debug("Send mail status: [%s]" % send_stauts)
+    send_stauts = send_mail(result_dir)
+    nt_logger.debug("Send mail status: [%s]" % send_stauts)
 
     if is_webdriver and (not is_xwalkdriver_active()):
         kill_xwalkdriver_process()

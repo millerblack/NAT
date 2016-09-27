@@ -36,6 +36,7 @@
   "test_platform": "iot",
   "iot_os_type": "linux",
   "ostro_img_build_id": "2016-09-13_19-23-09-build-66",
+  "ostro_img_url": "http://ostroci.ostc.intel.com/download/ostro-os-xt/builds/ostro-os-xt_pull-requests",
   "open_source_projects_dir": "/home/qawt/Tools/crosswalk-project",
   "xwalkdriver_path": "/home/qawt/Tools/crosswalk-project/crosswalk-web-driver/bin",
   "is_webdriver": 0,

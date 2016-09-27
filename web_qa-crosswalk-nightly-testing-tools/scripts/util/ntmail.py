@@ -28,6 +28,8 @@ def generate_report_mail_summary(result_dir, binary_branch, binary_version, devi
         binary_file_name = "crosswalk-%s-64bit" % binary_version
 
     binary_info = "Binary Location\n-----------------------\n%s (%s/%s/%s/%s/%s/crosswalk-tools/%s.zip)" % (binary_file_name, package_release_server_url, crosswalk_type, test_platform, binary_branch.replace('canary', 'master'), binary_version, binary_file_name)
+    if test_platform == "iot":
+        binary_info = "Ostro Image Location\n-----------------------\n%s/%s" % (settings_dic["ostro_img_url"], settings_dic["ostro_img_build_id"])
     device_info_title = "\n\nTest Device & Operating System\n-----------------------\n"
     device_info = "%s (%s) - %s Version: %s\n\n" % (device_name.replace("_", " "), device_type.capitalize(), test_platform.capitalize(), platform_version)
     host_info = ''
@@ -66,6 +68,8 @@ def generate_report_mail_summary(result_dir, binary_branch, binary_version, devi
     summary_info = binary_info + device_info_title + device_info + host_info + '\n' + details_info
 
     if is_upload_report:
+        if test_platform == "iot":
+            binary_version = settings_dic["ostro_img_build_id"][20:]
         save_link_dir = "%s/%s/%s/%s/%s" % (upload_log_dir, device_name, binary_version, timestamp, flag)
         link_info = get_report_link_info(save_link_dir)
         link_summary = "\n\nReport links\n-----------------------\n%s\n" % link_info
